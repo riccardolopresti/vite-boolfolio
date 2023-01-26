@@ -12,26 +12,39 @@ export default {
   data(){
     return{
       store,
-      baseUrl:'http://127.0.0.1:8000/api/projects'
     }
   },
   methods:{
-    getApi(){
-      axios.get(this.baseUrl)
+    getApi(page){
+      store.current = page
+      //console.log('------',store.current)
+      axios.get(store.baseUrl, {params: {page: store.current }})
         .then(result => {
-          store.projects = result.data.projects;
-          console.log(store.projects)
+          store.projects = result.data.projects.data;
+          store.current = result.data.projects.current_page
+          store.last = result.data.projects.last_page
+          //console.log(store.baseUrl, {params: {page: store.current }})
         })
     }
   },
   mounted(){
-    this.getApi(this.baseUrl)
+    this.getApi(1)
   }
 }
 </script>
 
 <template>
   <ProjectCard />
+
+  <div class="paginate text-center my-5">
+
+    <button :disabled="store.current === 1" type="button" class="btn btn-outline-secondary me-1">prev</button>
+
+    <button  v-for="i in store.last" :key="i" type="button" class="btn btn-outline-secondary me-1" @click="this.getApi(i)">{{i}}</button>
+
+    <button :disabled="store.current === store.last" type="button" class="btn btn-outline-secondary ms-1" @click="this.getApi(store.current + 1)">next</button>
+
+  </div>
 </template>
 
 <style lang="scss">
